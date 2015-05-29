@@ -7,12 +7,28 @@ var DynamicSearch = React.createClass({
     return { searchString: '', countries: [{"name": "populating..."}] };
   },
   componentDidMount: function() {
-    url = 'https://gist.githubusercontent.com/robotamer/0ff951d12cbcdd3f56ed/raw/00d4e411a9fd396c7f030318f51d8030c523354c/countries.json';
-    $.getJSON(url, function(data) {
-      this.setState({
-        countries: data
-      })
-    }.bind(this));
+    var request = new XMLHttpRequest();
+    request.open('GET', this.props.source, true);
+
+    request.onload = function() {
+      if (request.status >= 200 && request.status < 400) {
+        // Success!
+        var data = JSON.parse(request.responseText);
+        this.setState({
+          countries: JSON.parse(request.responseText)
+        })
+
+      } else {
+        // We reached our target server, but it returned an error
+
+      }
+    }.bind(this);
+
+    request.onerror = function() {
+      // There was a connection error of some sort
+    };
+
+    request.send();
   },
   // sets state, triggers render method
   handleChange: function(event){
@@ -23,6 +39,7 @@ var DynamicSearch = React.createClass({
 
   render: function() {
 
+    var source = this.props.source;
     var countries = this.state.countries;
     var searchString = this.state.searchString.trim().toLowerCase();
 
@@ -32,7 +49,6 @@ var DynamicSearch = React.createClass({
         return country.name.toLowerCase().match( searchString );
       });
     }
-    console.log(countries);
     return (
       <div>
         <input type="text" value={this.state.searchString} onChange={this.handleChange} placeholder="Search!" />
@@ -46,6 +62,6 @@ var DynamicSearch = React.createClass({
 });
 
 React.render(
-  <DynamicSearch />,
+  <DynamicSearch source="https://gist.githubusercontent.com/robotamer/0ff951d12cbcdd3f56ed/raw/00d4e411a9fd396c7f030318f51d8030c523354c/countries.json" />,
   document.getElementById('main')
 );
